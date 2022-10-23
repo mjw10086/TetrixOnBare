@@ -37,3 +37,47 @@
 Makefile提供构建脚本，注意`boot.asm`汇编的链接参数，`-Ttext=0x7c00`表示程序装在到内存的位置，`--oformat binary`表示生成数据的原始二进制Blob，而不是elf格式。
 
 在Bochs中则指定了BIOS和VGABIOS，并且设置机器的物理内存大小和机器的外接存储设备。
+
+# 由实模式进入保护模式
+
+在上一节我们打印Hello World是在实模式下实现的，由于实模式下可访问内存受限，因此我们要切换到保护模式。有关于实模式、保护模式以及64位时代的长模式的介绍请自行搜索理解。
+
+进入保护模式需要执行以下几个操作：
+
+- 加载GDT
+- 打开A20地址线
+- 修改CR0寄存器
+
+接下来逐一介绍。
+
+## 加载GDT
+
+GDT（全局描述符表）是指导CPU如何进行分段数据结构，有关什么是分段请参考操作系统内存管理章节。GDT位于内存中，有着固定的数据结构格式，CPU通过GDTR寄存器来获取GDT表的内存位置。
+
+有关GDT的详细格式可以参考《Linux内核完全解析 5.0》一书中的介绍。
+
+在这部分我们要做的是
+1. 设置GDT表
+2. 设置GDTR寄存器
+
+具体内容`boot.asm`参考代码中`gdt`关键词的部分。
+
+## 打开A20地址线
+
+关于A20地址线的历史情况，在《Linux内核完全解析 5.0》的 6.3.34 介绍的非常详细。
+
+A20地址线的开启有两种代码，一种是传统的方法，一种则是FAST A20。关于两种方法的操作请参考[https://wiki.osdev.org/A20#Enabling](https://wiki.osdev.org/A20#Enabling)。这里采取的是FAST A20的做法。
+
+## 修改CR0寄存器
+
+通过修改CR0开启保护模式，主要是针对PE位做修改，当为1时即开启保护模式。在设置完毕CR0后需要使用JMP指令刷新指令队列。
+
+## 测试功能
+
+在开启保护模式之后，程序可以访问到多于1MB的空间。通过对VRAM显存的设置来在屏幕上打印字符，从而测试保护模式是否成功运行。或者，我们可以通过Bochs的调试命令，查看CPU当前的模式。
+
+## 参考资料
+
+- 《Linux内核完全解析 5.0》
+- [https://wiki.osdev.org/A20](https://wiki.osdev.org/A20)
+- [https://en.wikipedia.org/wiki/Global_Descriptor_Table#GDT_example](https://en.wikipedia.org/wiki/Global_Descriptor_Table#GDT_example)
