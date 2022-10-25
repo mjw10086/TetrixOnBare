@@ -88,3 +88,26 @@ void set_timer_IRQ()
     // 注册时钟中断的中断处理函数
     register_ISR((uint32_t)&timer_interrupt_handler, 0);
 }
+
+// 循环队列（存放9个按键，也就是18对扫描值）
+uint8_t key_queue[19] = {0};
+int tail = 0;
+int head = 0;
+
+__attribute__((interrupt)) void kbd_interrupt_handler(struct interrupt_frame *frame)
+{
+    uint8_t res = read_from_port(0x60);
+    key_queue[tail] = res;
+    // 如果队列满的话，那么出队一个元素
+    if ((tail + 1) % 19 == head)
+    {
+        head = (head + 1) % 19;
+    }
+    tail = (tail + 1) % 19;
+    write_to_port(0x20, 0x20);
+}
+
+void set_kbd_IRQ()
+{
+    register_ISR((uint32_t)&kbd_interrupt_handler, 1);
+}

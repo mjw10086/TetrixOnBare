@@ -18,4 +18,7 @@ void register_ISR(uint32_t isr_addr, unsigned int irq_code);
 // 设置时钟中断
 void set_timer_IRQ();
 
+// 设置键盘中断
+void set_kbd_IRQ();
+
 #endif

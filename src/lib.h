@@ -22,4 +22,11 @@ extern volatile uint32_t SleepCountDown;
 /* 睡眠 */
 void sleep(unsigned int millisecond);
 
+extern uint8_t key_queue[19];
+extern int tail;
+extern int head;
+
+/* 读取键盘的扫描码 */
+uint8_t read_key();
+
 #endif

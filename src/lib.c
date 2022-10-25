@@ -17,6 +17,8 @@ void print_char(char c, unsigned int row, unsigned int col)
         {
             if (mask & line)
                 *p = color;
+            else
+                *p = 0xff;
             mask = mask >> 1;
             ++p;
         }
@@ -59,5 +61,20 @@ void sleep(unsigned int millisecond)
 
     while (SleepCountDown)
     {
+    }
+}
+
+uint8_t read_key()
+{
+    // 如果队列为空则返回0
+    if (tail == head)
+    {
+        return 0;
+    }
+    else
+    {
+        uint8_t key = key_queue[head];
+        head = (head + 1) % 19;
+        return key;
     }
 }
