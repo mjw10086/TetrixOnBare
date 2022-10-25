@@ -6,12 +6,9 @@ _start:
         mov $0x00, %ah
         int $0x10
 
-        mov $0x1301, %ax     # 打印功能AH=0x13 写后光标位于串末尾AL=0x01
-        mov $0x000c, %bx     # 设置打印内容的样式
-        mov $msg_len, %cx    # 字符串长度 CX=10
-        mov $0x0, %dx        # 设置光标起始位置
-        mov $msg, %bp        # 设置打印内容的地址
-        int $0x10            # 调用BIOS中断，打印字符串
+        # 设置VGA图像模式
+        mov $0x13, %ax
+        int $0x10
 
         cli                  # 切换保护模式期间关中断
         # 设置GDTR寄存器
@@ -31,10 +28,6 @@ _start:
         ljmp $0x8, $start_protected_mode
 
         hlt
-        
-msg: .ascii "Hello World"
-.equ msg_len, (.-msg)
-
 
 # 参考自https://en.wikipedia.org/wiki/Global_Descriptor_Table#GDT_example
 gdt:

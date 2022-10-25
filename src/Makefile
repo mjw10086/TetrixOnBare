@@ -2,8 +2,8 @@ boot: boot.asm
 	as boot.asm -o boot.o 
 	ld boot.o -s -Ttext=0x7c00 --oformat binary -o boot
 
-main: main.c
-	gcc main.c -e main -nostartfiles -o main -m32
+main: main.c lib.h
+	gcc main.c lib.c -e main -nostartfiles -o main -m32
 
 os_img: boot main
 	dd if=boot of=os_img bs=512
