@@ -166,3 +166,34 @@ VGA模式有两个工作环境，一个是图像模式，一个是文字模式�
 关于PIC的编程需要理解PIC的的具体操作方法，这里简化为仅对0到7号中断进行允许，有关于更多的PIC编程内容，后面有机会单独了解。
 
 另外，有关于PIC编程利用了在`io.asm`中定义的`write_to_port`和`read_from_port`两个函数，这里的技术是如何让C语言调用汇编函数，根据架构不同，其参数和返回值的位置也不仅相同，这里采用的是i386的方法，也就是参数和返回值被放入栈中。具体内容可以参见代码以及Makefile文件。
+
+**更正**
+
+**代码中这里存在问题**
+```c
+    // 设置PIC使其允许该类型中断
+    uint8_t mask = read_from_port(PIC_M_DATA);
+    mask = mask | (0x1 << irq_code);
+    write_to_port(PIC_M_DATA, mask);
+```
+**应该改为**
+```c
+    // 设置PIC使其允许该类型中断
+    uint8_t mask = read_from_port(PIC_M_DATA);
+    mask = mask & ~(0x1 << irq_code);
+    write_to_port(PIC_M_DATA, mask);
+```
+
+## sleep函数的实现
+
+sleep函数需要时钟中断，在上一部分中已经设置好了中断系统，现在要定时产生时钟中断，需要对中断源PIT进行编程。相关资料可以参考这两个网页内容：
+- [https://0cch.com/2013/08/04/e4bdbfe794a8e58fafe7bc96e7a88be997b4e99a94e5ae9ae697b6e599a8programmable-interval-timere7bc96e58699e7b3bbe7bb9fe697b6e9929f/](https://0cch.com/2013/08/04/e4bdbfe794a8e58fafe7bc96e7a88be997b4e99a94e5ae9ae697b6e599a8programmable-interval-timere7bc96e58699e7b3bbe7bb9fe697b6e9929f/) 
+- [https://wiki.osdev.org/Pit#I.2FO_Ports](https://wiki.osdev.org/Pit#I.2FO_Ports)。
+
+sleep函数的大致思想如下
+- sleep函数设置一个全局变量，时钟中断按固定频率定时发生，每次时钟中断发生后就对全局变量进行减少
+- sleep函数在设置完全局变量后就进入循环，一直等到全局变量变为0的时候退出循环
+
+关于sleep的循环，这里采用的是简单的手段，也就是while空循环，不调用hlt指令是因为在调用htl指令后游戏运行速度有明显问题，具体原因不知道，hlt会让CPU停止512个周期好像。
+
+具体的代码实现，放在`lib.c`中。

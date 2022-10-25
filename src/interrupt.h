@@ -15,4 +15,7 @@ void init_interrupt();
 // 注册中断处理函数并对PIC编程使其支持对应类型的中断
 void register_ISR(uint32_t isr_addr, unsigned int irq_code);
 
+// 设置时钟中断
+void set_timer_IRQ();
+
 #endif

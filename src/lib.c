@@ -1,4 +1,5 @@
 #include "lib.h"
+#include "interrupt.h"
 
 void print_char(char c, unsigned int row, unsigned int col)
 {
@@ -49,5 +50,14 @@ void draw_square(unsigned int row, unsigned int col, unsigned int width, unsigne
             ++p;
         }
         p = p + SCREEN_WIDTH - width;
+    }
+}
+
+void sleep(unsigned int millisecond)
+{
+    SleepCountDown = millisecond;
+
+    while (SleepCountDown)
+    {
     }
 }

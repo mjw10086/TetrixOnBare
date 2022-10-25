@@ -5,8 +5,11 @@ boot: boot.asm
 io.o: io.asm
 	as io.asm -o io.o --32
 
-main: main.c lib.h io.o interrupt.h
-	gcc main.c lib.c io.o interrupt.c -e main -nostartfiles -o main -m32
+interrupt.o: interrupt.h
+	gcc -c interrupt.c -m32 -mgeneral-regs-only
+
+main: main.c lib.h io.o interrupt.o
+	gcc main.c lib.c io.o interrupt.o -e main -nostartfiles -o main -m32
 
 os_img: boot main
 	dd if=boot of=os_img bs=512

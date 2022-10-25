@@ -58,6 +58,33 @@ void register_ISR(uint32_t isr_addr, unsigned int irq_code)
 
     // 设置PIC使其允许该类型中断
     uint8_t mask = read_from_port(PIC_M_DATA);
-    mask = mask | (0x1 << irq_code);
+    mask = mask & ~(0x1 << irq_code);
     write_to_port(PIC_M_DATA, mask);
+}
+
+struct interrupt_frame;
+
+// 时钟中断的全局变量
+volatile uint32_t SleepCountDown = 0;
+
+// 时钟中断服务程序
+// 这里是中断服务程序在gcc下的写法
+__attribute__((interrupt)) void timer_interrupt_handler(struct interrupt_frame *frame)
+{
+    --SleepCountDown;
+
+    // 通知PIC中断已经被接收
+    write_to_port(0x20, 0x20);
+}
+
+void set_timer_IRQ()
+{
+    // 设置时钟中断中断源PIT
+    // 10ms: 0x2e9c = 11932    1ms:  04A9 = 1193
+    write_to_port(0x43, 0x34);
+    write_to_port(0x40, 0xa9);
+    write_to_port(0x40, 0x04);
+
+    // 注册时钟中断的中断处理函数
+    register_ISR((uint32_t)&timer_interrupt_handler, 0);
 }

@@ -1,9 +1,18 @@
 #include "lib.h"
+#include "interrupt.h"
 
 int main(int argc, char const *argv[])
 {
-    print_str("Hello World", 1, 1);
-    draw_square(50, 50, 30, 30, 0x0f);
+    init_interrupt();
+    set_timer_IRQ();
+
+    char *msg = "hello world";
+    for (int i = 0; i < 11; i++)
+    {
+        print_char(msg[i], 1, i);
+        sleep(20000);
+    }
+
     while (1)
     {
     }

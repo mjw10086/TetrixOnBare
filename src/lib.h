@@ -18,4 +18,8 @@ void print_str(char *c, unsigned int row, unsigned int col);
 /* 画方块 */
 void draw_square(unsigned int row, unsigned int col, unsigned int width, unsigned int height, uint8_t color);
 
+extern volatile uint32_t SleepCountDown;
+/* 睡眠 */
+void sleep(unsigned int millisecond);
+
 #endif
