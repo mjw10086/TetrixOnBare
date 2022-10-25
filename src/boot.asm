@@ -69,17 +69,81 @@ gdt_48:
 # 通过长跳转，程序执行到这个函数时，表示已经进入保护模式
 .code32
 start_protected_mode:
-        # 设置内容
-        mov $0x41, %al
-        mov $0x0f, %ah
-        # 设置DS
+        # 设置段寄存器
         mov $0x10, %ebx
         mov %ebx, %ds
-        # 传输内容到显存
-        mov $0xb8320, %ebx
-        mov %eax, (%ebx)
+        mov %ebx, %es
+        mov %ebx, %ss
 
-        jmp .
+        # 设置栈起始位置
+        mov $0x12000, %eax
+        mov %eax, %esp
+        mov %eax, %ebp
+
+        # 读取硬盘中C语言程序的内容到内存
+        mov $0x1, %eax                 # 0x1号扇区
+        mov $0x20000, %ebx             # 读到0x20000内存处
+        mov $27, %ecx                  # 读取27个扇区
+        call rd_disk_m_32
+
+        # 将执行权交由C语言程序
+        ljmp $0x8, $0x21000
+
+
+# 读取硬盘内容到内存
+# 代码摘自 https://www.cnblogs.com/flashsun/p/12235761.html
+rd_disk_m_32:
+
+    mov  %eax, %esi
+    mov  %cx, %di
+
+    mov  $0x1f2, %dx
+    mov  %cl, %al
+    out  %al, %dx
+
+    mov  %esi, %eax
+    # 保存LBA地址
+    mov  $0x1f3, %dx
+    out  %al, %dx
+
+    mov  $8, %cl
+    shr  %cl, %eax
+    mov  $0x1f4, %dx
+    out  %al, %dx
+
+    shr  %cl, %eax
+    mov  $0x1f5, %dx
+    out  %al, %dx
+
+    shr  %cl, %eax
+    and  $0x0f, %al
+    or   $0xe0,%al
+    mov  $0x1f6, %dx
+    out  %al, %dx
+
+    mov  $0x1f7, %dx
+    mov  $0x20, %al
+    out  %al, %dx
+
+.not_ready:
+    nop
+    in  %dx, %al
+    and $0x88, %al
+    cmp $0x08, %al
+    jnz .not_ready
+
+    mov %di, %ax
+    mov $256, %dx
+    mul %dx
+    mov %ax, %cx
+    mov $0x1f0, %dx
+
+.go_on_read:
+    in  %dx, %ax
+    mov %ax, %ds:(%ebx)
+    add $2, %ebx
+    loop .go_on_read
+    ret
 
 .fill 510-(.-_start), 1, 0       # 设置魔术字符
 .word 0xaa55
