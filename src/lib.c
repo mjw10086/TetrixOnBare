@@ -55,6 +55,29 @@ void draw_square(unsigned int row, unsigned int col, unsigned int width, unsigne
     }
 }
 
+
+void draw_line(unsigned int start_row, unsigned int end_row, unsigned int start_col, unsigned int end_col, uint8_t color)
+{
+    if (start_row == end_row)
+    {
+        char *p = (char *)(VRAM_START_ADDR + start_row * SCREEN_WIDTH + start_col);
+        for (int i = start_col; i < end_col; i++)
+        {
+            *p = color;
+            ++p;
+        }
+    }
+    else if (start_col == end_col)
+    {
+        char *p = (char *)(VRAM_START_ADDR + start_row * SCREEN_WIDTH + start_col);
+        for (int i = start_row; i < end_row; i++)
+        {
+            *p = color;
+            p += SCREEN_WIDTH;
+        }
+    }
+}
+
 void sleep(unsigned int millisecond)
 {
     SleepCountDown = millisecond;
@@ -77,4 +100,19 @@ uint8_t read_key()
         head = (head + 1) % 19;
         return key;
     }
+}
+
+
+/* 随机函数， 摘抄自标准库 */
+static unsigned long int next = 1;  // NB: "unsigned long int" is assumed to be 32 bits wide
+ 
+int rand(void)  // RAND_MAX assumed to be 32767
+{
+    next = next * 1103515245 + 12345;
+    return (unsigned int) (next / 65536) % 32768;
+}
+ 
+void srand(unsigned int seed)
+{
+    next = seed;
 }

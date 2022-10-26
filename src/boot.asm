@@ -65,8 +65,10 @@ start_protected_mode:
         # 设置段寄存器
         mov $0x10, %ebx
         mov %ebx, %ds
-        mov %ebx, %es
         mov %ebx, %ss
+        mov %ebx, %es
+        mov %ebx, %fs
+        mov %ebx, %gs
 
         # 设置栈起始位置
         mov $0x12000, %eax
